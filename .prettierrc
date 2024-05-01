@@ -1,10 +1,7 @@
 {
-  "endOfLine": "lf",
-  "arrowParens": "always",
-  "jsxBracketSameLine": true,
-  "jsxSingleQuote": true,
-  "bracketSpacing": true,
+  "semi": true,
+  "trailingComma": "all",
   "singleQuote": true,
-  "htmlWhitespaceSensitivity": "strict",
-  "useTabs": false
+  "printWidth": 72,
+  "tabWidth": 4
 }
