@@ -1,8 +1,8 @@
 {
-  "name": "uniflik",
+  "name": "kabir_kutumb",
   "type": "commonjs",
   "version": "0.0.1",
-  "description": "Uniflik",
+  "description": "kabir_kutumb",
   "devDependencies": {
     "@babel/eslint-parser": "^7.16.3",
     "@babel/plugin-syntax-jsx": "^7.16.0",
