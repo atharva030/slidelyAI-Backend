@@ -45,6 +45,7 @@ export const createPhonepeOrder = async (req: Request, res: Response) => {
             merchantId: MERCHANT_ID, //* PHONEPE_MERCHANT_ID . Unique for each account (private)
             merchantTransactionId: merchantTransactionId,
             merchantUserId: merchantUserId,
+            amount:100*100,
             redirectUrl: `${APP_BE_URL}/ourservices/getstatusOrder/${merchantTransactionId}`,
             redirectMode: "REDIRECT",
             mobileNumber: req.params.phoneNumber,
