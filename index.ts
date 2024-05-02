@@ -1,5 +1,5 @@
 require('dotenv').config();
-import mongoose from 'mongoose';
+import mongoose, { ConnectOptions } from 'mongoose';
 import app from './src/configs/express.config';
 import http from 'http';
 import logger from './src/configs/logger.config';
@@ -10,12 +10,7 @@ const server = http.createServer(app);
 
 export const connectToMongoDB = async (mongoURI: string) => {
   try {
-    await mongoose.connect(mongoURI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false,
-      useCreateIndex: true,
-    });
+    await mongoose.connect(mongoURI as string)
     logger.info('Connected to MongoDB');
     server.listen(PORT, () => {
       logger.info(`Server running at ${PORT}`);
