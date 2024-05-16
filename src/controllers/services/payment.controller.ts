@@ -2,86 +2,84 @@ import { Request, Response } from 'express';
 import httpStatusCodes from 'http-status-codes';
 import axios from 'axios';
 import Services from '../../models/services/service.models';
-import { SHA256 } from 'crypto-js';
+import { SHA512, enc } from 'crypto-js'; // Import SHA512 hash function and encodings from crypto-js
+import Razorpay from 'razorpay';
 import BookedService from '../../models/services/bookedServices.models';
 import uniqid from 'uniqid';
 import ShortUniqueId from 'short-unique-id';
-
+import hmacSHA512 from 'crypto-js/hmac-sha512';
 const MERCHANT_ID = process.env.MERCHANT_ID;
 const PHONE_PE_HOST_URL = process.env.PHONE_PE_HOST_URL;
 const SALT_INDEX = process.env.SALT_INDEX;
 const SALT_KEY = process.env.SALT_KEY;
 const APP_BE_URL = process.env.APP_BE_URL; // our application
 
-export const createPhonepeOrder = async (req: Request, res: Response) => {
+export const verifyIdentity = async (req: Request, res: Response) => {
     try {
-        const phone = req.params.phoneNumber;
-        let merchantTransactionId = uniqid();
-        const uid = new ShortUniqueId({ length: 10 });
-        const merchantUserId = uid.rnd()
+        const secret = "razorpaysecret";
 
-        // const booking = await BookedService.findOne({
-        //     merchantUserId: merUserId,
-        //     merchantTransactionId: mertransId,
-        //     phoneNumber: phone
-        // }).populate('service');
+        console.log(req.body);
 
-        // if (!booking) {
-        //     return res.status(httpStatusCodes.BAD_GATEWAY).json({
-        //         message: "Something went wrong"
-        //     });
-        // }
+        // Compute hash of the request body
+        const hash = SHA512(secret + JSON.stringify(req.body));
 
-        const selectedService = await Services.findOne({ service_id: req.params.service_id });
-        if (!selectedService) {
-            return res.status(httpStatusCodes.NOT_FOUND).json({
-                message: "Action Not allowed"
+        const digest = hash.toString(enc.Hex); // Convert the hash to a hex string
+
+        console.log(digest, req.headers["x-razorpay-signature"]);
+        // Compare computed hash with the signature in request headers
+        if (digest === req.headers["x-razorpay-signature"]) {
+            console.log("request is legit");
+            res.status(httpStatusCodes.OK).json({
+                message: "OK",
             });
+        } else {
+            res.status(httpStatusCodes.FORBIDDEN).json({ message: "Invalid" });
         }
+    } catch (error: any) {
+        console.error(error);
+        res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json('Internal server error');
+        return;
+    }
+};
+function generateRandomId(length = 10) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let randomId = '';
+    for (let i = 0; i < length; i++) {
+        randomId += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return randomId;
+}
 
-        // Generate a unique merchant transaction ID for each transaction
-        // redirect url => phonePe will redirect the user to this url once payment is completed. It will be a GET request, since redirectMode is "REDIRECT"
-        let normalPayLoad = {
-            merchantId: MERCHANT_ID, //* PHONEPE_MERCHANT_ID . Unique for each account (private)
-            merchantTransactionId: merchantTransactionId,
-            merchantUserId: merchantUserId,
-            amount:100*100,
-            redirectUrl: `${APP_BE_URL}/ourservices/getstatusOrder/${merchantTransactionId}`,
-            redirectMode: "REDIRECT",
-            mobileNumber: req.params.phoneNumber,
-            paymentInstrument: {
-                type: "PAY_PAGE",
-            },
+var razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+export const createOrder = async (req: Request, res: Response) => {
+    try {
+        const payment_capture = 1;
+        const amount = 500;
+        const currency = "INR";
+
+        const options = {
+            amount,
+            currency,
+            receipt: generateRandomId(),
+            payment_capture,
         };
 
-        // make base64 encoded payload
-        let base64EncodedPayload = Buffer.from(JSON.stringify(normalPayLoad)).toString("base64");
-
-        // X-VERIFY => SHA256(base64EncodedPayload + "/pg/v1/pay" + SALT_KEY) + ### + SALT_INDEX
-        let string = base64EncodedPayload + "/pg/v1/pay" + SALT_KEY;
-        let sha256_val = SHA256(string);
-        let xVerifyChecksum = sha256_val + "###" + SALT_INDEX;
-
-        axios.post(
-            `${PHONE_PE_HOST_URL}/pg/v1/pay`,
-            {
-                request: base64EncodedPayload,
-            },
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-VERIFY": xVerifyChecksum,
-                    accept: "application/json",
-                },
-            }
-        ).then(function (response) {
-            console.log("inside the success")
-            res.redirect(response.data.data.instrumentResponse.redirectInfo.url);
-        }).catch(function (error) {
-            console.log("this is an error")
-            console.log(error);
-            res.send(error);
-        });
+        try {
+            const response = await razorpay.orders.create(options);
+            console.log(response);
+            res.status(200).json({
+                id: response.id,
+                currency: response.currency,
+                amount: response.amount,
+            });
+        } catch (err) {
+            console.log(err);
+        }
     } catch (error: any) {
         console.error(error);
         res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json('Internal server error');
