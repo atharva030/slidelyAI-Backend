@@ -2,11 +2,11 @@ import express from 'express';
 const router = express.Router();
 
 import {
-    createPhonepeOrder,
+    createOrder,
 } from '../../controllers/services/payment.controller';
 import { createService, getServices } from '../../controllers/services/services.controller';
 
-router.get('/createPhonepeOrder/:service_id/:phoneNumber', createPhonepeOrder);
+router.get('/createPhonepeOrder/:service_id/:phoneNumber', createOrder);
 router.post('/createService', createService);
 router.get('/getServices', getServices);
 
