@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import httpStatusCodes from 'http-status-codes';
 import axios from 'axios';
 import { Users } from '../../models/users/users.model';
+import https from 'https';
 
 export const createUser = async (req: Request, res: Response) => {
     const {
@@ -56,6 +57,119 @@ export const createUser = async (req: Request, res: Response) => {
     } catch (error) {
         res.status(400).send(error);
     }
+};
+const MSG91_AUTH_KEY = process.env.MSG91_AUTH_KEY;
+const MSG91_TEMPLATE_ID = process.env.MSG91_TEMPLATE_ID;
+
+// Generate a random 6-digit OTP
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// In-memory store for OTPs (for demonstration purposes)
+const otpStore: { [key: string]: string } = {};
+
+interface RequestOptions extends https.RequestOptions {
+    port?: number | null;
+}
+
+
+export const sendOtp = async (req: Request, res: Response) => {
+    const { mobile } = req.body;
+    if (!mobile) {
+        return res.status(400).json({ error: 'Mobile number is required' });
+    }
+    const otp = generateOTP();
+
+    const data = JSON.stringify({
+        mobile: mobile, // Include the mobile number in the request body
+        OTP: otp
+    });
+
+    const options: RequestOptions = {
+        method: 'POST',
+        hostname: 'control.msg91.com',
+        port: null,
+        path: `/api/v5/otp?template_id=${MSG91_TEMPLATE_ID}&mobile=${mobile}&authkey=${MSG91_AUTH_KEY}`,
+        headers: {
+            'Content-Type': 'application/JSON'
+        }
+    };  
+
+    const request = https.request(options, (response) => {
+        let chunks: any[] = [];
+
+        response.on('data', (chunk) => {
+            chunks.push(chunk);
+        });
+
+        response.on('end', () => {
+            const body = Buffer.concat(chunks).toString();
+            // const result = JSON.parse(body);
+            console.log(body)
+            res.json({ message: 'OTP sent successfully' });
+            // if (result.type === 'success') {
+            // } else {
+            //     res.status(500).json({ error: 'Failed to send OTP', details: result.message });
+            // }
+        });
+    });
+
+    request.write(data);
+    request.end();
+
+    request.on('error', (e) => {
+        res.status(500).json({ error: 'Failed to send OTP', details: e.message });
+    });
+};
+
+export const verifyOtp = async (req: Request, res: Response) => {
+    const { mobile, otp } = req.body;
+    if (!mobile || !otp) {
+        return res.status(400).json({ error: 'Mobile number and OTP are required' });
+    }
+
+    const data = JSON.stringify({
+        mobile: mobile,
+        otp: otp,
+        authkey: MSG91_AUTH_KEY
+    });
+
+    const options: RequestOptions = {
+        method: 'POST',
+        hostname: 'control.msg91.com',
+        port: null,
+        path: '/api/v5/otp/verify',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    const request = https.request(options, (response) => {
+        let chunks: any[] = [];
+
+        response.on('data', (chunk) => {
+            chunks.push(chunk);
+        });
+
+        response.on('end', () => {
+            const body = Buffer.concat(chunks).toString();
+            const result = JSON.parse(body);
+
+            if (result.type === 'success') {
+                res.json({ message: 'OTP verified successfully' });
+            } else {
+                res.status(400).json({ error: 'Invalid OTP', details: result.message });
+            }
+        });
+    });
+
+    request.write(data);
+    request.end();
+
+    request.on('error', (e) => {
+        res.status(500).json({ error: 'Failed to verify OTP', details: e.message });
+    });
 };
 
 
