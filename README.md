@@ -1,5 +1,5 @@
 # MERN Backend with TypeScript
-
+THIS IS THE BACKEND REPOSITORY OF SLIDELY AI FOR EVALUATION
 This repository contains the backend code for a MERN stack application using TypeScript.
 
 ## Table of Contents
@@ -22,8 +22,7 @@ Ensure you have the following installed on your machine:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/atharva030/slidelyAI-Backend.git
 
 1. Install Dependencies:
    ```bash
