@@ -28,3 +28,22 @@ Ensure you have the following installed on your machine:
    ```bash
    git clone https://github.com/yourusername/your-repo-name.git
    cd your-repo-name
+
+
+Environment Variables
+Create a .env file in the root directory of your project and add the following environment variables:
+
+plaintext
+Copy code
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/your-db-name
+JWT_SECRET=your-secret-key
+Running the Application
+To start the development server, run:
+
+bash
+Copy code
+npm run dev
+# or
+yarn dev
+This will start the server using ts-node-dev for hot-reloading.
