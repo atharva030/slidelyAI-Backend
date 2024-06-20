@@ -8,10 +8,6 @@ This repository contains the backend code for a MERN stack application using Typ
 - [Installation](#installation)
 - [Environment Variables](#environment-variables)
 - [Running the Application](#running-the-application)
-- [Project Structure](#project-structure)
-- [Scripts](#scripts)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Prerequisites
 
@@ -36,3 +32,13 @@ Ensure you have the following installed on your machine:
    yarn install
 
 3. NOTE: I have pushed the env variables into the repository for the seamless evaluation.
+
+## Running application
+
+To start the development server, run:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+
+
