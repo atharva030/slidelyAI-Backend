@@ -1,8 +1,8 @@
 {
-  "name": "kabir_kutumb",
+  "name": "slidelyai",
   "type": "commonjs",
   "version": "0.0.1",
-  "description": "kabir_kutumb",
+  "description": "slidelyai",
   "devDependencies": {
     "@babel/eslint-parser": "^7.16.3",
     "@babel/plugin-syntax-jsx": "^7.16.0",

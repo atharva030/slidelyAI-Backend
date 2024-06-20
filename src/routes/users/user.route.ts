@@ -3,12 +3,12 @@ const router = express.Router();
 
 import {
     createUser,
-    sendOtp,
-    verifyOtp,
+    getUser,
+    deleteEntry
 } from '../../controllers/users/user.controller';
 
 router.post('/createUser', createUser);
-router.post('/sendotp', sendOtp);
-router.post('/verifyOtp', verifyOtp);
+router.get('/getUser', getUser);
+router.post('/deleteEntry', deleteEntry);
 
 export default router;
